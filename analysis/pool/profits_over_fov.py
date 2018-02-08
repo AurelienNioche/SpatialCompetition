@@ -57,8 +57,8 @@ def profits_over_fov(pool_backup, fig_name):
     # Do the hist plot
     width = boundaries[1] - boundaries[0]
     where = [np.mean((boundaries[i+1], boundaries[i])) for i in range(len(boundaries)-1)]
-    ax.bar(where, height=mean_data, yerr=std_data, width=width, alpha=0.2,
-           edgecolor='white', linewidth=2, facecolor="k")
+    ax.bar(where, height=mean_data, yerr=std_data, width=width,
+           edgecolor='white', linewidth=2, facecolor="0.75")
 
     # Cut the margins
     plt.tight_layout()
