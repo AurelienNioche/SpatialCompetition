@@ -2,7 +2,7 @@ from pylab import plt, np
 import os
 
 
-def distance_over_fov(pool_backup, fig_name):
+def distance_over_fov(pool_backup, fig_name, color=False):
 
     # Create directories if not already existing
     os.makedirs(os.path.dirname(fig_name), exist_ok=True)
@@ -20,6 +20,7 @@ def distance_over_fov(pool_backup, fig_name):
     x = np.zeros(n_simulations)
     y = np.zeros(n_simulations)
     z = np.zeros(n_simulations)
+    y_err = np.zeros(n_simulations)
 
     # How many time steps from the end of the simulation are included in analysis
     span_ratio = 0.33  # Take last third
@@ -37,6 +38,9 @@ def distance_over_fov(pool_backup, fig_name):
         spacing = np.mean(data)
 
         y[i] = spacing
+
+        # Get std
+        y_err[i] = np.std(data)
 
         # Get mean profits
         z[i] = np.mean(b.profits[-span:, :])
@@ -56,7 +60,7 @@ def distance_over_fov(pool_backup, fig_name):
     ax.set_xlabel("$r$")
     ax.set_ylabel("Mean distance")
 
-    ax.set_title("Mean distance between firms over $r$")
+    # ax.set_title("Mean distance between firms over $r$")
 
     # Display line for indicating 'random' level
     seed = 123
@@ -65,11 +69,10 @@ def distance_over_fov(pool_backup, fig_name):
     random_dist = np.mean(np.absolute(random_pos[0] - random_pos[1]))
     ax.axhline(random_dist, color='0.5', linewidth=0.5, linestyle="--", zorder=1)
 
-    # Do the scatter plot
-    scat = ax.scatter(x, y, c=z, zorder=10, alpha=0.25)
-
-    # Add a color bar
-    fig.colorbar(scat, label="Profits")
+    if color:
+        _color(fig=fig, ax=ax, x=x, y=y, z=z)
+    else:
+        _bw(ax=ax, x=x, y=y, y_err=y_err)
 
     # Cut the margins
     plt.tight_layout()
@@ -78,3 +81,21 @@ def distance_over_fov(pool_backup, fig_name):
     plt.savefig(fig_name)
 
     plt.close()
+
+
+def _bw(ax, x, y, y_err):
+
+    # Do the scatter plot
+    ax.scatter(x, y, facecolor="black", edgecolor='white', s=15, alpha=1)
+
+    # Error bars
+    ax.errorbar(x, y, yerr=y_err, fmt='.', color="0.80", zorder=-10, linewidth=0.5)
+
+
+def _color(fig, ax, x, y, z):
+
+    # Do the scatter plot
+    scat = ax.scatter(x, y, c=z, zorder=10, alpha=0.25)
+
+    # Add a color bar
+    fig.colorbar(scat, label="Profits")

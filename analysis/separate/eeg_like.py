@@ -43,7 +43,7 @@ def eeg_like(backup, fig_name):
     ax.set_ylabel('Position $a$', labelpad=16)
 
     # Add title
-    plt.title("Evolution of positions and prices ($r={}$)".format(backup.parameters.r))
+    plt.title("$r={}$".format(backup.parameters.r))
 
     # Position firm B
 

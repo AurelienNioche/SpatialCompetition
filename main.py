@@ -18,6 +18,13 @@ def run(param):
 
 def produce_data(parameters_file, data_file):
 
+    """
+    Produce data for 'pooled' condition using multiprocessing
+    :param parameters_file: Path to parameters file (string)
+    :param data_file: Path to the future data files (dictionary with two entries)
+    :return: a 'pool backup' (arbitrary Python object)
+    """
+
     json_parameters = parameters.load(parameters_file)
 
     pool_parameters = parameters.extract_parameters(json_parameters)
@@ -39,6 +46,12 @@ def produce_data(parameters_file, data_file):
 
 def get_files_names(condition):
 
+    """
+    Give the files names depending on condition
+    :param condition: string
+    :return: Files names (tuple of size 3 containing dictionaries)
+    """
+
     parameters_file = "parameters/json/{}.json".format(condition)
     data_file = {
         "pickle": "data/pickle/{}.p".format(condition),
@@ -47,7 +60,9 @@ def get_files_names(condition):
 
     if condition == 'pool':
         fig_names = {
-            "main": "data/figs/{}.pdf".format(condition)
+            "distance": "data/figs/{}_distance.pdf".format(condition),
+            "prices": "data/figs/{}_prices.pdf".format(condition),
+            "profits": "data/figs/{}_profits.pdf".format(condition)
         }
 
     else:
@@ -60,10 +75,24 @@ def get_files_names(condition):
 
 
 def data_already_produced(data_file):
+
+    """
+    If data files already exist, return True
+    :param data_file: Path to data file (dictionary with two entries)
+    :return: True or False
+    """
     return os.path.exists(data_file["json"]) and os.path.exists(data_file["pickle"])
 
 
 def terminal_msg(condition, parameters_file, data_file, figure_files):
+
+    """
+    :param condition: Name of condition (string)
+    :param parameters_file: Path to parameters file (string)
+    :param data_file: Path to data file (dictionary with two entries)
+    :param figure_files: Path to figure files (dictionary with n entries)
+    :return: None
+    """
 
     print("\n************ For '{}' results **************".format(condition))
     print()
@@ -79,15 +108,20 @@ def terminal_msg(condition, parameters_file, data_file, figure_files):
 
 def a_priori():
 
+    """
+    Produce figures for 'a priori' analysis
+    :return: None
+    """
+
     figure_files = {
         "targetable_consumers": "data/figs/targetable_consumers.pdf",
-        "captive_consumers_inline": "data/figs/captive_consumers_inline.pdf"
+        "captive_consumers": "data/figs/captive_consumers.pdf"
     }
 
     analysis.a_priori.targetable_consumers(figure_files["targetable_consumers"])
     analysis.a_priori.captive_consumers_inline_figures(
         radius=(0.25, 0.5, 0.75),
-        fig_name=figure_files["captive_consumers_inline"],
+        fig_name=figure_files["captive_consumers"],
     )
 
     print("\n************ For 'a priori' analysis **************\n")
@@ -99,6 +133,12 @@ def a_priori():
 
 def pooled_data(args):
 
+    """
+    Produce figures for 'pooled' data
+    :param args: Parsed args from command line ('Namespace' object)
+    :return: None
+    """
+
     condition = "pool"
 
     parameters_file, data_file, fig_files = get_files_names(condition)
@@ -109,7 +149,9 @@ def pooled_data(args):
     else:
         pool_backup = backup.PoolBackup.load(data_file["pickle"])
 
-    analysis.pool.distance_over_fov(pool_backup=pool_backup, fig_name=fig_files["main"])
+    analysis.pool.distance_over_fov(pool_backup=pool_backup, fig_name=fig_files["distance"])
+    analysis.pool.prices_over_fov(pool_backup=pool_backup, fig_name=fig_files["prices"])
+    analysis.pool.profits_over_fov(pool_backup=pool_backup, fig_name=fig_files["profits"])
 
     terminal_msg(condition, parameters_file, data_file, fig_files)
 
@@ -117,8 +159,9 @@ def pooled_data(args):
 def individual_data(args):
 
     """
-    :param args:
-    :return:
+    Produce figures for 'individual' data
+    :param args: Parsed args from command line ('Namespace' object)
+    :return: None
     """
 
     for condition in ("75", "50", "25"):

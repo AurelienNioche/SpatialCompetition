@@ -44,9 +44,9 @@ class Model:
         """
 
         z = np.zeros((self.n_positions, self.n_positions, 3), dtype=int)
-        # Last parameter is idx0: n customers seeing only A,
-        #                   idx1: n customers seeing only B,
-        #                   idx2: customers seeing A and B,
+        # Last parameter is idx0: n consumers seeing only A,
+        #                   idx1: n consumers seeing only B,
+        #                   idx2: consumers seeing A and B,
 
         field_of_view = np.zeros((self.n_positions, 2))  # 2: min, max
         field_of_view[:] = [self.field_of_view(x) for x in range(self.n_positions)]

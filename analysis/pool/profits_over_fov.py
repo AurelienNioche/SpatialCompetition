@@ -12,48 +12,53 @@ def profits_over_fov(pool_backup, fig_name):
     backups = pool_backup.backups
 
     # Look at the parameters
-    n_simulations = len(parameters["seed"])
     t_max = parameters["t_max"]
-
-    # Containers
-    x = np.zeros(n_simulations)
-    y = np.zeros(n_simulations)
-    y_err = np.zeros(n_simulations)
 
     # How many time steps from the end of the simulation are included in analysis
     span_ratio = 0.33  # Take last third
     span = int(span_ratio * t_max)
 
-    for i, b in enumerate(backups):
-        x[i] = b.parameters.r
+    # Number of bins for the barplot
+    n_bins = 50
 
-        data = np.mean(b.profits[-span:, :])
-        data_std = np.std(data)
+    # Compute the boundaries
+    boundaries = np.linspace(0, 1, (n_bins + 1))
 
-        y[i] = data
-        y_err[i] = data_std
+    # Container for data
+    data = [[] for i in range(n_bins)]
+
+    for b in backups:
+
+        r = b.parameters.r
+
+        for i, bound in enumerate(boundaries[1:]):
+            if r <= bound:
+                mean_profit = np.mean(b.profits[-span:, :])
+                data[i].append(mean_profit)
+                break
+
+    mean_data = [np.mean(d) for d in data]
+    std_data = [np.std(d) for d in data]
 
     # Create figs and plot
-    fig = plt.figure(figsize=(10, 6))
+    fig = plt.figure(figsize=(10, 4))
     ax = plt.subplot()
 
     # Enhance aesthetics
     ax.set_xlim(-0.01, 1.01)
-    # ax.set_ylim(-0.01, max(y))
 
     ax.set_xticks(np.arange(0, 1.1, 0.25))
-    # ax.set_yticks(np.arange(0, 0.51, 0.1))
 
     ax.set_xlabel("$r$")
-    ax.set_ylabel("Mean price")
+    ax.set_ylabel("Mean profits")
 
-    ax.set_title("Mean prices over $r$")
+    # ax.set_title("Mean profits over $r$")
 
-    # Do the scatter plot
-    ax.scatter(x, y, facecolor="black", edgecolor='none', s=25, alpha=0.15)
-
-    # Error bars
-    ax.errorbar(x, y, yerr=y_err, fmt='.', alpha=0.1)
+    # Do the hist plot
+    width = boundaries[1] - boundaries[0]
+    where = [np.mean((boundaries[i+1], boundaries[i])) for i in range(len(boundaries)-1)]
+    ax.bar(where, height=mean_data, yerr=std_data, width=width, alpha=0.2,
+           edgecolor='white', linewidth=2, facecolor="k")
 
     # Cut the margins
     plt.tight_layout()
