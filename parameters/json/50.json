@@ -1,9 +1,9 @@
 {
     "n_positions": 100,
-    "n_prices": 50,
+    "n_prices": 10,
     "p_max": 10,
     "p_min": 1,
     "r": 0.5,
-    "seed": 1826485390,
+    "seed": 2840156691,
     "t_max": 100
 }

@@ -88,7 +88,7 @@ def generate_new_parameters_files():
     n_sim = 1000
     p_min = 1
     p_max = 10
-    n_prices = 50
+    n_prices = 10
     n_positions = 100
     t_max = 100
 
