@@ -1,3 +1,18 @@
+# SpatialCompetition
+# Copyright (C) 2018  Aurélien Nioche, Basile Garcia & Nicolas Rougier
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -5,6 +20,7 @@ import os
 
 def eeg_like(backup, fig_name):
 
+    # Create directories if not already existing
     os.makedirs(os.path.dirname(fig_name), exist_ok=True)
 
     pst = backup.positions
@@ -34,7 +50,6 @@ def eeg_like(backup, fig_name):
     ax = plt.subplot(4, 1, 1)
     ax.plot(t, position_A, color=color_A, alpha=1, linewidth=1.1)
     ax.plot(t, np.ones(len(t)) * 0.5, color='0.5', linewidth=0.5, linestyle='dashed', zorder=-10)
-    # ax.plot(t, position_B, color="black", alpha=0.5, linewidth=1)
     ax.spines['top'].set_color('none')
     ax.spines['right'].set_color('none')
     ax.spines['bottom'].set_color('none')
@@ -50,7 +65,6 @@ def eeg_like(backup, fig_name):
     ax = plt.subplot(4, 1, 2)
     ax.plot(t, position_B, color=color_B, alpha=1, linewidth=1.1)
     ax.plot(t, np.ones(len(t)) * 0.5, color='0.5', linewidth=0.5, linestyle='dashed', zorder=-10)
-    # ax.plot(t, position_A, color="black", alpha=0.5, linewidth=1)
     ax.spines['top'].set_color('none')
     ax.spines['right'].set_color('none')
     ax.spines['bottom'].set_color('none')
@@ -62,7 +76,6 @@ def eeg_like(backup, fig_name):
 
     ax = plt.subplot(4, 1, 3)
     ax.plot(t, price_A, color=color_A, alpha=1, linewidth=1.1, clip_on=False)
-    # ax.plot(t, price_B, color="black", alpha=0.5, linewidth=1)
     ax.spines['top'].set_color('none')
     ax.spines['right'].set_color('none')
     ax.spines['bottom'].set_color('none')
@@ -75,7 +88,6 @@ def eeg_like(backup, fig_name):
 
     ax = plt.subplot(4, 1, 4)
     ax.plot(t, price_B, color=color_B, alpha=1, linewidth=1.1, clip_on=False)
-    # ax.plot(t, price_A, color="black", alpha=0.5, linewidth=1)
     ax.spines['top'].set_color('none')
     ax.spines['right'].set_color('none')
     ax.spines['bottom'].set_color('none')

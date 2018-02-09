@@ -1,3 +1,19 @@
+# SpatialCompetition
+# Copyright (C) 2018  Aurélien Nioche, Basile Garcia & Nicolas Rougier
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -23,20 +39,28 @@ def get_targetable(r, n_position):
 
 def targetable_consumers(fig_name):
 
+    # Create directories if not already existing
+    os.makedirs(os.path.dirname(fig_name), exist_ok=True)
+
     # Parameters
     seed = 123
     np.random.seed(seed)
     n_position = 100
 
+    # Create ax
     ax = plt.subplot()
+
+    # Get data and plot it
     x = np.linspace(0, 1, n_position)
 
     for r, line_style in zip([0.25, 0.50, 0.75], ["--", "-", ":"]):
         y = get_targetable(r, n_position=n_position)
         ax.plot(x, y, label="$r={:.2f}$".format(r), linewidth=1.5, clip_on=True, linestyle=line_style, color="black")
 
+    # Add a legend
     plt.legend()
 
+    # Enhance aesthetics
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
 
@@ -51,6 +75,7 @@ def targetable_consumers(fig_name):
     ax.set_ylabel("Targetable consumers")
     ax.set_xlabel("Position")
 
+    # Save figure
     plt.savefig(fig_name)
 
     plt.close()

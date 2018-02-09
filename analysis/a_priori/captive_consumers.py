@@ -1,3 +1,19 @@
+# SpatialCompetition
+# Copyright (C) 2018  Aurélien Nioche, Basile Garcia & Nicolas Rougier
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import os
 import string
 import tqdm
 import numpy as np
@@ -17,7 +33,10 @@ def compute_consumers(x1, x2, V):
     return len(U1), len(U2), len(S)
 
 
-def captive_consumers_inline_figures(radius, fig_name):
+def captive_consumers(radius, fig_name):
+
+    # Create directories if not already existing
+    os.makedirs(os.path.dirname(fig_name), exist_ok=True)
 
     # Figures' labels
     ind_fig_names = string.ascii_uppercase[:len(radius)]
@@ -87,6 +106,7 @@ def captive_consumers_inline_figures(radius, fig_name):
             cb.ax.tick_params(labelsize=15)
             cb.ax.set_ylabel(ylabel="Number of Firm B captive consumers", fontsize=17)
 
+        # Customize axes
         ax[idx].set_xticks([0, 50, 100])
         ax[idx].set_xticklabels(["0.0", "0.5", "1.0"])
         ax[idx].set_yticks([0, 50, 100])

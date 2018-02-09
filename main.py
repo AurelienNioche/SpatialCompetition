@@ -1,3 +1,18 @@
+# SpatialCompetition
+# Copyright (C) 2018  Aurélien Nioche, Basile Garcia & Nicolas Rougier
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import multiprocessing as mlt
 import tqdm
 import os
@@ -119,7 +134,7 @@ def a_priori():
     }
 
     analysis.a_priori.targetable_consumers(figure_files["targetable_consumers"])
-    analysis.a_priori.captive_consumers_inline_figures(
+    analysis.a_priori.captive_consumers(
         radius=(0.25, 0.5, 0.75),
         fig_name=figure_files["captive_consumers"],
     )
@@ -208,9 +223,7 @@ def main(args):
 
 if __name__ == "__main__":
 
-    """
-    Parse the arguments given in command line and call the 'main' function
-    """
+    # Parse the arguments given in command line and call the 'main' function
 
     parser = argparse.ArgumentParser(description='Produce figures.')
     parser.add_argument('-f', '--force', action="store_true", default=False,
