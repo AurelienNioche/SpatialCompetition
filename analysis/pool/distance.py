@@ -17,7 +17,7 @@ from pylab import plt, np
 import os
 
 
-def distance_over_fov(pool_backup, fig_name, color=False):
+def distance(pool_backup, fig_name, color=False):
 
     # Create directories if not already existing
     os.makedirs(os.path.dirname(fig_name), exist_ok=True)

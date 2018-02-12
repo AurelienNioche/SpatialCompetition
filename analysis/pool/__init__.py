@@ -1,4 +1,4 @@
-from . distance_over_fov import *
-from . prices_over_fov import *
-from . profits_over_fov import *
+from . distance import *
+from . prices_and_profits import prices_and_profits
+
 

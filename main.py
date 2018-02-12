@@ -59,10 +59,10 @@ def produce_data(parameters_file, data_file):
     return pool_backup
 
 
-def get_files_names(condition):
+def get_file_names(condition):
 
     """
-    Give the files names depending on condition
+    Give the file names depending on condition
     :param condition: string
     :return: Files names (tuple of size 3 containing dictionaries)
     """
@@ -73,20 +73,22 @@ def get_files_names(condition):
         "json": "data/json/{}.json".format(condition)
     }
 
-    if condition == 'pool':
-        fig_names = {
-            "distance": "data/figs/{}_distance.pdf".format(condition),
-            "prices": "data/figs/{}_prices.pdf".format(condition),
-            "profits": "data/figs/{}_profits.pdf".format(condition)
-        }
+    return parameters_file, data_file
 
-    else:
-        fig_names = {
-            "eeg_like": "data/figs/eeg_like_{}.pdf".format(condition),
-            "positions": "data/figs/positions_{}.pdf".format(condition)
-        }
 
-    return parameters_file, data_file, fig_names
+def get_fig_names():
+
+    folder = "data/figs"
+
+    fig_names = {
+        "distance": "{}/pool_distance.pdf".format(folder),
+        "prices_and_profits": "{}/pool_prices_and_profits.pdf".format(folder),
+        "separate": "{}/separate.pdf".format(folder),
+        "targetable_consumers": "{}/targetable_consumers.pdf".format(folder),
+        "captive_consumers": "{}/captive_consumers.pdf".format(folder)
+    }
+
+    return fig_names
 
 
 def data_already_produced(data_file):
@@ -99,23 +101,9 @@ def data_already_produced(data_file):
     return os.path.exists(data_file["json"]) and os.path.exists(data_file["pickle"])
 
 
-def terminal_msg(condition, parameters_file, data_file, figure_files):
+def terminal_msg(figure_files):
 
-    """
-    :param condition: Name of condition (string)
-    :param parameters_file: Path to parameters file (string)
-    :param data_file: Path to data file (dictionary with two entries)
-    :param figure_files: Path to figure files (dictionary with n entries)
-    :return: None
-    """
-
-    print("\n************ For '{}' results **************".format(condition))
-    print()
-    print("Parameters file used is: '{}'\n".format(parameters_file))
-    print("Data files are:\n"
-          "* '{}' for parameters\n"
-          "* '{}' for data itself\n".format(parameters_file, data_file["json"], data_file["pickle"]))
-    print("Figures files are:")
+    print("Figures produced are:")
     for file in figure_files.values():
         print("* '{}'".format(file))
     print()
@@ -128,22 +116,14 @@ def a_priori():
     :return: None
     """
 
-    figure_files = {
-        "targetable_consumers": "data/figs/targetable_consumers.pdf",
-        "captive_consumers": "data/figs/captive_consumers.pdf"
-    }
+    figure_names = get_fig_names()
+    radius = (0.25, 0.5, 0.75)
 
-    analysis.a_priori.targetable_consumers(figure_files["targetable_consumers"])
+    analysis.a_priori.targetable_consumers(figure_names["targetable_consumers"])
     analysis.a_priori.captive_consumers(
-        radius=(0.25, 0.5, 0.75),
-        fig_name=figure_files["captive_consumers"],
+        radius=radius,
+        fig_name=figure_names["captive_consumers"],
     )
-
-    print("\n************ For 'a priori' analysis **************\n")
-    print("Figures files are:")
-    for file in figure_files.values():
-        print("* '{}'".format(file))
-    print()
 
 
 def pooled_data(args):
@@ -156,7 +136,8 @@ def pooled_data(args):
 
     condition = "pool"
 
-    parameters_file, data_file, fig_files = get_files_names(condition)
+    parameters_file, data_file = get_file_names(condition)
+    fig_names = get_fig_names()
 
     if not data_already_produced(data_file) or args.force:
         pool_backup = produce_data(parameters_file, data_file)
@@ -164,11 +145,8 @@ def pooled_data(args):
     else:
         pool_backup = backup.PoolBackup.load(data_file["pickle"])
 
-    analysis.pool.distance_over_fov(pool_backup=pool_backup, fig_name=fig_files["distance"])
-    analysis.pool.prices_over_fov(pool_backup=pool_backup, fig_name=fig_files["prices"])
-    analysis.pool.profits_over_fov(pool_backup=pool_backup, fig_name=fig_files["profits"])
-
-    terminal_msg(condition, parameters_file, data_file, fig_files)
+    analysis.pool.distance(pool_backup=pool_backup, fig_name=fig_names["distance"])
+    analysis.pool.prices_and_profits(pool_backup=pool_backup, fig_name=fig_names["prices_and_profits"])
 
 
 def individual_data(args):
@@ -179,9 +157,11 @@ def individual_data(args):
     :return: None
     """
 
+    run_backups = []
+
     for condition in ("75", "50", "25"):
 
-        parameters_file, data_file, fig_files = get_files_names(condition)
+        parameters_file, data_file = get_file_names(condition)
 
         if not data_already_produced(data_file) or args.force:
 
@@ -193,10 +173,9 @@ def individual_data(args):
         else:
             run_backup = backup.RunBackup.load(data_file["pickle"])
 
-        analysis.separate.eeg_like(backup=run_backup, fig_name=fig_files["eeg_like"])
-        analysis.separate.pos_firmA_over_pos_firmB(backup=run_backup, fig_name=fig_files["positions"])
+        run_backups.append(run_backup)
 
-        terminal_msg(condition, parameters_file, data_file, fig_files)
+    analysis.separate.separate(backups=run_backups, fig_name=get_fig_names()["separate"])
 
 
 def main(args):
@@ -219,6 +198,8 @@ def main(args):
 
     if args.a_priori or (not args.individual and not args.pooled):
         a_priori()
+
+    terminal_msg(get_fig_names())
 
 
 if __name__ == "__main__":
