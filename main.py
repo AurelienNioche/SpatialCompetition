@@ -159,7 +159,7 @@ def individual_data(args):
 
     run_backups = []
 
-    for condition in ("75", "50", "25"):
+    for condition in ("25", "50", "75"):
 
         parameters_file, data_file = get_file_names(condition)
 

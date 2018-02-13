@@ -12,12 +12,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 from pylab import plt, np
 import os
 
 
-def prices_over_fov(pool_backup):
+def prices_over_fov(pool_backup, pos_subplot):
 
     # Shortcuts
     parameters = pool_backup.parameters
@@ -53,16 +52,13 @@ def prices_over_fov(pool_backup):
     std_data = [np.std(d) for d in data]
 
     # Create figs and plot
-    fig = plt.figure(figsize=(10, 4))
-    ax = plt.subplot()
+    ax = plt.subplot(*pos_subplot)
 
     # Enhance aesthetics
     ax.set_xlim(-0.01, 1.01)
 
-    ax.set_xticks(np.arange(0, 1.1, 0.25))
-
-    ax.set_xlabel("$r$")
-    ax.set_ylabel("Mean price")
+    ax.set_xticks([])
+    ax.set_ylabel("Mean prices")
 
     # ax.set_title("Mean prices over $r$")
 
@@ -73,7 +69,7 @@ def prices_over_fov(pool_backup):
            edgecolor='white', linewidth=2, facecolor="0.75")
 
 
-def profits_over_fov(pool_backup):
+def profits_over_fov(pool_backup, pos_subplot):
 
     # Shortcuts
     parameters = pool_backup.parameters
@@ -109,8 +105,7 @@ def profits_over_fov(pool_backup):
     std_data = [np.std(d) for d in data]
 
     # Create figs and plot
-    fig = plt.figure(figsize=(10, 4))
-    ax = plt.subplot()
+    ax = plt.subplot(*pos_subplot)
 
     # Enhance aesthetics
     ax.set_xlim(-0.01, 1.01)
@@ -134,9 +129,14 @@ def prices_and_profits(pool_backup, fig_name):
     # Create directories if not already existing
     os.makedirs(os.path.dirname(fig_name), exist_ok=True)
 
-    #####
-    # TO DO
-    ######
+    plt.figure(figsize=(9, 8))
+
+    n_rows = 2
+    n_cols = 1
+
+    prices_over_fov(pool_backup, (n_rows, n_cols, 1))
+
+    profits_over_fov(pool_backup, (n_rows, n_cols, 2))
 
     # Cut margins
     plt.tight_layout()
