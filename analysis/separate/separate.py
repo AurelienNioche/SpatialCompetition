@@ -125,13 +125,17 @@ def separate(backups, fig_name):
     # Create directories if not already existing
     os.makedirs(os.path.dirname(fig_name), exist_ok=True)
 
-    n_left_row = 3
-    n_sub_right_row = 4
-
+    # Create the figure object
     plt.figure(figsize=(10, 15), subplotpars=SubplotParams(left=0.075, right=1, bottom=0.04, top=0.97))
 
+    # 3 main rows corresponding to the 3 'radius' conditions
+    n_row = 3
+    n_right_sub_row = 4
+
+    # Width ratios of the two columns (we expect the right column to be twice larger than the left one)
     width_ratios = [1, 2]
 
+    # Separate the frame in two columns (1: 1 row, 2: 2 columns)
     gs0 = gridspec.GridSpec(
         1,
         2,
@@ -139,23 +143,21 @@ def separate(backups, fig_name):
         wspace=0.4
     )
 
-    gs00 = gridspec.GridSpecFromSubplotSpec(n_left_row, 1, subplot_spec=gs0[0])
-    gs01 = gridspec.GridSpecFromSubplotSpec(n_left_row, 1, subplot_spec=gs0[1])
+    # Create 3 rows for each column (gs00: column left; gs01: column right)
+    gs00 = gridspec.GridSpecFromSubplotSpec(n_row, 1, subplot_spec=gs0[0])
+    gs01 = gridspec.GridSpecFromSubplotSpec(n_row, 1, subplot_spec=gs0[1])
 
-    n_ax = 0
+    for i, backup in zip(range(n_row), backups):
 
-    for i, backup in zip(range(n_left_row), backups):
-
-        # Plot figure on left
+        # Plot the sub-figure on left
         pos_firmA_over_pos_firmB(backup, subplot_position=gs00[i, 0])
-        n_ax += 1
 
-        gs = gridspec.GridSpecFromSubplotSpec(n_sub_right_row, 1, subplot_spec=gs01[i])
+        # Create sub-rows on the right
+        gs = gridspec.GridSpecFromSubplotSpec(n_right_sub_row, 1, subplot_spec=gs01[i])
+        subplots_positions = [gs[j, 0] for j in range(n_right_sub_row)]
 
-        subplots_positions = [gs[j, 0] for j in range(n_sub_right_row)]
+        # Plot the 4 sub-figures on the right
         eeg_like(backup=backup, subplots_positions=subplots_positions)
-
-        n_ax += 4
 
     # Save fig
     plt.savefig(fig_name)
