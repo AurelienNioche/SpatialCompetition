@@ -15,6 +15,7 @@
 
 import numpy as np
 import itertools
+# import time
 
 import backup
 
@@ -171,6 +172,21 @@ class Model:
 
         return i
 
+    def optimal_move_to_beat_the_opponent(self, opp_move):
+
+        exp_profits = np.zeros((self.n_strategies, 2))
+
+        for i in range(self.n_strategies):
+            exp_profits[i, :] = self.profits_given_position_and_price(i, opp_move)
+
+        profits_differences = np.array(exp_profits[:, 0] - exp_profits[:, 1])
+        max_profits_difference = max(profits_differences)
+
+        idx = np.flatnonzero(profits_differences == max_profits_difference)
+        i = np.random.choice(idx)
+
+        return i
+
     def run(self):
         
         """
@@ -194,7 +210,7 @@ class Model:
 
             passive = (active + 1) % 2  # Get passive id
 
-            moves[active] = self.optimal_move(moves[passive])  # Make play active firm
+            moves[active] = self.optimal_move_to_beat_the_opponent(moves[passive])  # Make play active firm
 
             move0, move1 = moves  # Useful for call of functions
 

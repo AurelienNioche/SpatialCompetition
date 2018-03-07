@@ -57,10 +57,10 @@ def prices_over_fov(pool_backup, pos_subplot):
     # Enhance aesthetics
     ax.set_xlim(-0.01, 1.01)
 
+    ax.set_ylim(-0.01, 11)
+
     ax.set_xticks([])
     ax.set_ylabel("Mean prices")
-
-    # ax.set_title("Mean prices over $r$")
 
     # Do the hist plot
     width = boundaries[1] - boundaries[0]
@@ -109,6 +109,8 @@ def profits_over_fov(pool_backup, pos_subplot):
 
     # Enhance aesthetics
     ax.set_xlim(-0.01, 1.01)
+
+    ax.set_ylim(-0.01, 500)
 
     ax.set_xticks(np.arange(0, 1.1, 0.25))
 
