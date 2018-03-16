@@ -61,28 +61,29 @@ def distance(pool_backup, fig_name, color=False):
         z[i] = np.mean(b.profits[-span:, :])
 
     # Plot this
-    fig = plt.figure(figsize=(10, 6))
+    fig = plt.figure(figsize=(5, 5), dpi=200)
     ax = plt.subplot()
 
     # Enhance aesthetics
-    ax.set_xlim(-0.01, 1.01)
-    if max(y) < 0.5:
-        ax.set_ylim(-0.01, 0.51)
+    ax.set_xlim(-0.009, 1.005)
+    ax.set_ylim(-0.009, 1.005)
+    # if max(y) < 0.5:
+    #     ax.set_ylim(-0.01, 0.51)
 
     ax.set_xticks(np.arange(0, 1.1, 0.25))
-    ax.set_yticks(np.arange(0, 0.51, 0.1))
+    ax.set_yticks(np.arange(0, 1.1, 0.25))
 
     ax.set_xlabel("$r$")
-    ax.set_ylabel("Mean distance")
+    ax.set_ylabel("Distance")
 
     # ax.set_title("Mean distance between firms over $r$")
 
     # Display line for indicating 'random' level
-    seed = 123
-    np.random.seed(seed)
-    random_pos = np.random.random(size=(2, 10 ** 6))
-    random_dist = np.mean(np.absolute(random_pos[0] - random_pos[1]))
-    ax.axhline(random_dist, color='0.5', linewidth=0.5, linestyle="--", zorder=1)
+    # seed = 123
+    # np.random.seed(seed)
+    # random_pos = np.random.random(size=(2, 10 ** 6))
+    # random_dist = np.mean(np.absolute(random_pos[0] - random_pos[1]))
+    # ax.axhline(random_dist, color='0.5', linewidth=0.5, linestyle="--", zorder=1)
 
     if color:
         _color(fig=fig, ax=ax, x=x, y=y, z=z)

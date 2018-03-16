@@ -40,6 +40,8 @@ def prices_over_fov(pool_backup, pos_subplot):
 
     for b in backups:
 
+        print(np.min(b.prices), np.max(b.prices))
+
         r = b.parameters.r
 
         for i, bound in enumerate(boundaries[1:]):
@@ -57,8 +59,12 @@ def prices_over_fov(pool_backup, pos_subplot):
     # Enhance aesthetics
     ax.set_xlim(-0.01, 1.01)
 
+    ax.tick_params(labelsize=9)
+
     ax.set_xticks([])
-    ax.set_ylabel("Mean prices")
+    ax.set_ylabel("Price")
+    ax.set_ylim((parameters["p_min"]-0.5, parameters["p_max"]+0.5))
+    ax.set_yticks(np.arange(parameters["p_min"], parameters["p_max"]+1, 2))
 
     # ax.set_title("Mean prices over $r$")
 
@@ -112,8 +118,10 @@ def profits_over_fov(pool_backup, pos_subplot):
 
     ax.set_xticks(np.arange(0, 1.1, 0.25))
 
+    ax.tick_params(labelsize=9)
+
     ax.set_xlabel("$r$")
-    ax.set_ylabel("Mean profits")
+    ax.set_ylabel("Profit")
 
     # ax.set_title("Mean profits over $r$")
 
@@ -129,7 +137,7 @@ def prices_and_profits(pool_backup, fig_name):
     # Create directories if not already existing
     os.makedirs(os.path.dirname(fig_name), exist_ok=True)
 
-    plt.figure(figsize=(9, 8))
+    plt.figure(figsize=(4, 5), dpi=200)
 
     n_rows = 2
     n_cols = 1

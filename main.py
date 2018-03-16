@@ -117,7 +117,7 @@ def a_priori():
     """
 
     figure_names = get_fig_names()
-    radius = (0.25, 0.5, 0.75)
+    radius = (0.25, 0.5)  # , 0.75)
 
     analysis.a_priori.targetable_consumers(figure_names["targetable_consumers"])
     analysis.a_priori.captive_consumers(
@@ -159,7 +159,7 @@ def individual_data(args):
 
     run_backups = []
 
-    for condition in ("25", "50", "75"):
+    for condition in ("25", "50"):  # , "75"):
 
         parameters_file, data_file = get_file_names(condition)
 

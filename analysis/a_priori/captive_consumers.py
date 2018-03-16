@@ -19,7 +19,8 @@ import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import colors
-from mpl_toolkits.axes_grid1 import make_axes_locatable
+import matplotlib.gridspec
+# from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
 def compute_consumers(x1, x2, V):
@@ -42,9 +43,10 @@ def captive_consumers(radius, fig_name):
     ind_fig_names = string.ascii_uppercase[:len(radius)]
 
     # Plot this
-    fig = plt.figure(figsize=(16, 5))
+    fig = plt.figure(figsize=(10, 5))
 
-    ax = [[], ] * len(ind_fig_names)
+    # ax = [[], ] * len(ind_fig_names)
+    gs = matplotlib.gridspec.GridSpec(nrows=1, ncols=len(radius) + 1, width_ratios=[1, 1, 0.1])
 
     for idx, (r, name) in enumerate(zip(radius, ind_fig_names)):
 
@@ -80,7 +82,7 @@ def captive_consumers(radius, fig_name):
                 S[x1, x2] = s
                 G[x1, x2] = n_position - u1 - u2 - s
 
-        ax[idx] = fig.add_subplot(1, 3, idx + 1)
+        ax = fig.add_subplot(gs[0, idx])
 
         # Relative to colormap
         cmap = plt.get_cmap("viridis")
@@ -88,48 +90,55 @@ def captive_consumers(radius, fig_name):
         norm = colors.BoundaryNorm(bounds, cmap.N)
 
         # Imshow object
-        im = ax[idx].imshow(C1, origin='lower', extent=[0, 100, 0, 100], norm=norm, aspect="auto")
-        ax[idx].text(4, 4, name, color="white", fontsize=20, fontweight="bold")
-        ax[idx].set_aspect(1)
+        im = ax.imshow(C1, origin='lower', extent=[0, 100, 0, 100], norm=norm)  # , aspect="auto")
+        # ax.text(4, 4, name, color="white", fontsize=20, fontweight="bold")
 
         # Some tuning on axes
-        for tick in ax[idx].get_xticklabels():
+        for tick in ax.get_xticklabels():
             tick.set_fontsize("x-large")
-        for tick in ax[idx].get_yticklabels():
+        for tick in ax.get_yticklabels():
             tick.set_fontsize("x-large")
 
         # Add a colorbar for fig at pos (1, 3, 3)
         if idx + 1 == len(ind_fig_names):
-            divider = make_axes_locatable(ax[idx])
-            cax = divider.append_axes("right", size="6%", pad=0.2)
-            cb = plt.colorbar(im, norm=norm, ticks=(0, 25, 50), cax=cax)
-            cb.ax.tick_params(labelsize=15)
-            cb.ax.set_ylabel(ylabel="Number of Firm B captive consumers", fontsize=17)
+            # divider = make_axes_locatable(ax)
+            # cax = divider.append_axes("right", size="6%", pad=0.2)
+            g = matplotlib.gridspec.GridSpecFromSubplotSpec(nrows=3, ncols=3, subplot_spec=gs[0, idx+1],
+                                                            height_ratios=[0.01, 1, 0.01],
+                                                            width_ratios=[0.1, 0.9, 0.1])
+
+            cax = fig.add_subplot(g[1, 1])
+            plt.colorbar(im, norm=norm, ticks=(0, 25, 50), cax=cax),  # cax=cax)
+            cax.tick_params(labelsize=15)
+            cax.set_ylabel(ylabel="Number of Firm B captive consumers", fontsize=17)
+            # cax.subplots_adjust(left=0.5, right=0.6, top=0.4, bottom=0.1)
 
         # Customize axes
-        ax[idx].set_xticks([0, 50, 100])
-        ax[idx].set_xticklabels(["0.0", "0.5", "1.0"])
-        ax[idx].set_yticks([0, 50, 100])
-        ax[idx].set_yticklabels(["0.0", "0.5", "1.0"])
+        ax.set_xticks([0, 50, 100])
+        ax.set_xticklabels(["0.0", "0.5", "1.0"])
+        ax.set_yticks([0, 50, 100])
+        ax.set_yticklabels(["0.0", "0.5", "1.0"])
 
         # Add a contour
         n_levels = int(C1.max()*16 / (n_position/2))
-        ct = ax[idx].contourf(C1, n_levels, origin='lower', vmax=n_position / 2)
+        ct = ax.contourf(C1, n_levels, origin='lower', vmax=n_position / 2)
 
         # Indicate middle by horizontal and vertical line
-        ax[idx].axhline(50, color="white", linewidth=0.5, linestyle="--", zorder=10)
-        ax[idx].axvline(50, color="white", linewidth=0.5, linestyle="--", zorder=10)
+        ax.axhline(50, color="white", linewidth=0.5, linestyle="--", zorder=10)
+        ax.axvline(50, color="white", linewidth=0.5, linestyle="--", zorder=10)
 
         # Name axes
-        ax[idx].set_xlabel("Position Firm A", labelpad=10, fontsize=17)
+        ax.set_xlabel("Position Firm A", labelpad=10, fontsize=17)
 
         if idx == 0:
-            ax[idx].set_ylabel("Position Firm B", labelpad=10, fontsize=17)
+            ax.set_ylabel("Position Firm B", labelpad=10, fontsize=17)
         else:
-            ax[idx].set_yticks([])
+            ax.set_yticks([])
 
         # Put a title
-        ax[idx].set_title("$r={:.2f}$".format(r), fontsize=18)
+        ax.set_title("$r={:.2f}$".format(r), fontsize=18)
+
+        ax.set_aspect(1)
 
     # Cut margins
     plt.tight_layout()

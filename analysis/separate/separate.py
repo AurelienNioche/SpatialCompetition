@@ -50,10 +50,14 @@ def eeg_like(backup, subplots_positions):
     ax.spines['bottom'].set_color('none')
     ax.set_xticks([])
     ax.set_yticks([0, 1])
-    ax.set_ylabel('Position $a$', labelpad=16)
+    ax.set_ylabel('Pos. A', labelpad=16)
+    for tick in ax.get_xticklabels():
+        tick.set_fontsize("small")
+    for tick in ax.get_yticklabels():
+        tick.set_fontsize("small")
 
     # Add title
-    plt.title("$r={}$".format(backup.parameters.r))
+    # plt.title("$r={}$".format(backup.parameters.r))
 
     # Position firm B
     ax = plt.subplot(subplots_positions[1])
@@ -64,7 +68,11 @@ def eeg_like(backup, subplots_positions):
     ax.spines['bottom'].set_color('none')
     ax.set_xticks([])
     ax.set_yticks([0, 1])
-    ax.set_ylabel('Position $b$', labelpad=16)
+    ax.set_ylabel('Pos. B', labelpad=16)
+    for tick in ax.get_xticklabels():
+        tick.set_fontsize("small")
+    for tick in ax.get_yticklabels():
+        tick.set_fontsize("small")
 
     # Price firm A
     ax = plt.subplot(subplots_positions[2])
@@ -74,8 +82,12 @@ def eeg_like(backup, subplots_positions):
     ax.spines['bottom'].set_color('none')
     ax.set_xticks([])
     ax.set_yticks([price_min, price_max])
-    ax.set_ylabel('Price $a$', labelpad=10)  # , rotation=0)
+    ax.set_ylabel('Price A', labelpad=10)  # , rotation=0)
     ax.set_ylim([price_min, price_max])
+    for tick in ax.get_xticklabels():
+        tick.set_fontsize("small")
+    for tick in ax.get_yticklabels():
+        tick.set_fontsize("small")
 
     # Price firm B
     ax = plt.subplot(subplots_positions[3])
@@ -85,10 +97,14 @@ def eeg_like(backup, subplots_positions):
     ax.spines['bottom'].set_color('none')
     ax.set_xticks([])
     ax.set_yticks([price_min, price_max])
-    ax.set_ylabel('Price $b$', labelpad=10)  # , rotation=0)
+    ax.set_ylabel('Price B', labelpad=10)  # , rotation=0)
     ax.set_ylim([price_min, price_max])
 
     ax.set_xlabel("Time", labelpad=10)
+    for tick in ax.get_xticklabels():
+        tick.set_fontsize("small")
+    for tick in ax.get_yticklabels():
+        tick.set_fontsize("small")
 
 
 def pos_firmA_over_pos_firmB(backup, subplot_position):
@@ -108,17 +124,18 @@ def pos_firmA_over_pos_firmB(backup, subplot_position):
     plt.xticks((0, 0.5, 1))
     plt.yticks((0, 0.5, 1))
 
-    plt.xlabel("Position $a$")
-    plt.ylabel("Position $b$")
+    plt.xlabel("Position A")
+    plt.ylabel("Position B")
 
     for tick in ax.get_xticklabels():
         tick.set_fontsize("small")
     for tick in ax.get_yticklabels():
         tick.set_fontsize("small")
 
-    plt.title("$r={:.2f}$".format(backup.parameters.r))
+    # plt.title("$r={:.2f}$".format(backup.parameters.r))
     ax.set_aspect(1)
 
+    return ax
 
 def separate(backups, fig_name):
 
@@ -126,10 +143,10 @@ def separate(backups, fig_name):
     os.makedirs(os.path.dirname(fig_name), exist_ok=True)
 
     # Create the figure object
-    plt.figure(figsize=(10, 15), subplotpars=SubplotParams(left=0.075, right=1, bottom=0.04, top=0.97))
+    plt.figure(figsize=(5, 7))#, subplotpars=SubplotParams(left=0.075, right=1, bottom=0.04, top=0.97))
 
     # 3 main rows corresponding to the 3 'radius' conditions
-    n_row = 3
+    n_row = 2  # 3
     n_right_sub_row = 4
 
     # Width ratios of the two columns (we expect the right column to be twice larger than the left one)
@@ -140,24 +157,28 @@ def separate(backups, fig_name):
         1,
         2,
         width_ratios=width_ratios,
-        wspace=0.4
+        #wspace=0.4
     )
 
     # Create 3 rows for each column (gs00: column left; gs01: column right)
     gs00 = gridspec.GridSpecFromSubplotSpec(n_row, 1, subplot_spec=gs0[0])
     gs01 = gridspec.GridSpecFromSubplotSpec(n_row, 1, subplot_spec=gs0[1])
 
-    for i, backup in zip(range(n_row), backups):
+    for i, b in zip(range(n_row), backups):
 
         # Plot the sub-figure on left
-        pos_firmA_over_pos_firmB(backup, subplot_position=gs00[i, 0])
+        ax = pos_firmA_over_pos_firmB(b, subplot_position=gs00[i, 0])
 
         # Create sub-rows on the right
         gs = gridspec.GridSpecFromSubplotSpec(n_right_sub_row, 1, subplot_spec=gs01[i])
         subplots_positions = [gs[j, 0] for j in range(n_right_sub_row)]
 
         # Plot the 4 sub-figures on the right
-        eeg_like(backup=backup, subplots_positions=subplots_positions)
+        eeg_like(backup=b, subplots_positions=subplots_positions)
+
+        ax.text(0.5, 1.5, '$r$ = {:.2f}'.format(b.parameters.r), horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
+
+    plt.tight_layout()
 
     # Save fig
     plt.savefig(fig_name)

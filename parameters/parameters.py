@@ -19,7 +19,7 @@ import numpy as np
 
 class Parameters:
 
-    def __init__(self, r=0.5, seed=0, n_positions=20, n_prices=10, p_min=1, p_max=2, t_max=100):
+    def __init__(self, r=0.5, seed=0, n_positions=20, n_prices=10, p_min=1, p_max=2, t_max=25):
 
         self.r = r
         self.seed = seed
