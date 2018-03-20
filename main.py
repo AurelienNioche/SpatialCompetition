@@ -16,6 +16,7 @@
 import multiprocessing as mlt
 import tqdm
 import os
+import numpy as np
 
 import model
 import analysis
@@ -54,59 +55,57 @@ def produce_data(parameters_file, data_file):
         backups.append(bkp)
 
     pool_backup = backup.PoolBackup(parameters=json_parameters, backups=backups)
-    pool_backup.save(data_file)
+    pool_backup.save(parameters_file, data_file)
 
     return pool_backup
 
 
-def get_file_names(condition):
+# def get_file_names(condition):
+#
+#     """
+#     Give the file names depending on condition
+#     :param condition: string
+#     :return: Files names (tuple of size 3 containing dictionaries)
+#     """
+#
+#     parameters_file = "parameters/json/{}.json".format(condition)
+#     data_file = {
+#         "pickle": "data/pickle/{}.p".format(condition),
+#         "json": "data/json/{}.json".format(condition)
+#     }
+#
+#     return parameters_file, data_file
+#
+#
+# def get_fig_names():
+#
+#     folder = "data/figs"
+#
+#     fig_names = {
+#         "distance": "{}/pool_distance.pdf".format(folder),
+#         "prices_and_profits": "{}/pool_prices_and_profits.pdf".format(folder),
+#         "separate": "{}/separate.pdf".format(folder),
+#         "targetable_consumers": "{}/targetable_consumers.pdf".format(folder),
+#         "captive_consumers": "{}/captive_consumers.pdf".format(folder)
+#     }
+#
+#     return fig_names
 
-    """
-    Give the file names depending on condition
-    :param condition: string
-    :return: Files names (tuple of size 3 containing dictionaries)
-    """
+# def terminal_msg(figure_files):
+#
+#     print("Figures produced are:")
+#     for file in figure_files.values():
+#         print("* '{}'".format(file))
+#     print()
 
-    parameters_file = "parameters/json/{}.json".format(condition)
-    data_file = {
-        "pickle": "data/pickle/{}.p".format(condition),
-        "json": "data/json/{}.json".format(condition)
-    }
-
-    return parameters_file, data_file
-
-
-def get_fig_names():
-
-    folder = "data/figs"
-
-    fig_names = {
-        "distance": "{}/pool_distance.pdf".format(folder),
-        "prices_and_profits": "{}/pool_prices_and_profits.pdf".format(folder),
-        "separate": "{}/separate.pdf".format(folder),
-        "targetable_consumers": "{}/targetable_consumers.pdf".format(folder),
-        "captive_consumers": "{}/captive_consumers.pdf".format(folder)
-    }
-
-    return fig_names
-
-
-def data_already_produced(data_file):
+def data_already_produced(*args):
 
     """
     If data files already exist, return True
-    :param data_file: Path to data file (dictionary with two entries)
+    :param args: Path to data files
     :return: True or False
     """
-    return os.path.exists(data_file["json"]) and os.path.exists(data_file["pickle"])
-
-
-def terminal_msg(figure_files):
-
-    print("Figures produced are:")
-    for file in figure_files.values():
-        print("* '{}'".format(file))
-    print()
+    return np.all([os.path.exists(i) for i in args])
 
 
 def a_priori():
@@ -116,13 +115,10 @@ def a_priori():
     :return: None
     """
 
-    figure_names = get_fig_names()
-    radius = (0.25, 0.5)  # , 0.75)
-
-    analysis.a_priori.targetable_consumers(figure_names["targetable_consumers"])
+    analysis.a_priori.targetable_consumers(fig_name="fig/targetable_consumers.pdf")
     analysis.a_priori.captive_consumers(
-        radius=radius,
-        fig_name=figure_names["captive_consumers"],
+        radius=(0.25, 0.5),
+        fig_name="fig/captive_consumers.pdf",
     )
 
 
@@ -134,19 +130,21 @@ def pooled_data(args):
     :return: None
     """
 
-    condition = "pool"
+    for move in (str(i).replace("Move.", "") for i in (
+            model.Move.max_profit, model.Move.strategic, model.Move.max_diff, model.Move.equal_sharing)):
 
-    parameters_file, data_file = get_file_names(condition)
-    fig_names = get_fig_names()
+        parameters_file = "data/json/pool_{}.json".format(move)
+        data_file = "data/pickle/pool_{}.p".format(move)
 
-    if not data_already_produced(data_file) or args.force:
-        pool_backup = produce_data(parameters_file, data_file)
+        if not data_already_produced(data_file) or args.force:
+            pool_backup = produce_data(parameters_file, data_file)
 
-    else:
-        pool_backup = backup.PoolBackup.load(data_file["pickle"])
+        else:
+            pool_backup = backup.PoolBackup.load(data_file)
 
-    analysis.pool.distance(pool_backup=pool_backup, fig_name=fig_names["distance"])
-    analysis.pool.prices_and_profits(pool_backup=pool_backup, fig_name=fig_names["prices_and_profits"])
+        analysis.pool.distance(pool_backup=pool_backup, fig_name='fig/distance_{}.pdf'.format(move))
+        analysis.pool.prices_and_profits(pool_backup=pool_backup,
+                                         fig_name='fig/prices_and_profits_{}.pdf'.format(move))
 
 
 def individual_data(args):
@@ -157,25 +155,29 @@ def individual_data(args):
     :return: None
     """
 
-    run_backups = []
+    for move in (str(i).replace("Move.", "") for i in (
+            model.Move.max_profit, model.Move.strategic, model.Move.max_diff, model.Move.equal_sharing)):
 
-    for condition in ("25", "50"):  # , "75"):
+        run_backups = []
 
-        parameters_file, data_file = get_file_names(condition)
+        for r in ("25", "50"):  # , "75"):
 
-        if not data_already_produced(data_file) or args.force:
+            parameters_file = "data/json/ind_{}_{}.json".format(r, move)
+            data_file = "data/json/ind_{}_{}.json".format(r, move)
 
-            json_parameters = parameters.load(parameters_file)
-            param = parameters.extract_parameters(json_parameters)
-            run_backup = run(param)
-            run_backup.save(data_file)
+            if not data_already_produced(data_file, parameters_file) or args.force:
 
-        else:
-            run_backup = backup.RunBackup.load(data_file["pickle"])
+                json_parameters = parameters.load(parameters_file)
+                param = parameters.extract_parameters(json_parameters)
+                run_backup = run(param)
+                run_backup.save(data_file)
 
-        run_backups.append(run_backup)
+            else:
+                run_backup = backup.RunBackup.load(data_file)
 
-    analysis.separate.separate(backups=run_backups, fig_name=get_fig_names()["separate"])
+            run_backups.append(run_backup)
+
+        analysis.separate.separate(backups=run_backups, fig_name='fig/separate_{}.pdf'.format(move))
 
 
 def main(args):
@@ -199,7 +201,8 @@ def main(args):
     if args.a_priori or (not args.individual and not args.pooled):
         a_priori()
 
-    terminal_msg(get_fig_names())
+    print("Figures have been created in 'fig' folder.")
+    # terminal_msg(get_fig_names())
 
 
 if __name__ == "__main__":

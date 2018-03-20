@@ -13,13 +13,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 import json
 import numpy as np
+
+from model import model
 
 
 class Parameters:
 
-    def __init__(self, r=0.5, seed=0, n_positions=20, n_prices=10, p_min=1, p_max=2, t_max=25):
+    def __init__(self, r=0.5, seed=0, n_positions=20, n_prices=10, p_min=1, p_max=2, t_max=25,
+                 move=model.Move.max_profit):
 
         self.r = r
         self.seed = seed
@@ -31,6 +35,8 @@ class Parameters:
 
         self.p_min = p_min
         self.p_max = p_max
+
+        self.move = move
 
         self.check()
 
@@ -48,6 +54,9 @@ class Parameters:
 
 
 def load(json_file):
+
+    if not os.path.exists(json_file):
+        generate_new_parameters_files()
 
     with open(json_file, "r") as f:
         j_param = json.load(f)
@@ -67,6 +76,7 @@ def extract_parameters(j_param):
                 t_max=j_param["t_max"],
                 r=j_param["r"][i],
                 seed=j_param["seed"][i],
+                move=getattr(model.Move, j_param["move"])
             )
             for i in range(len(j_param["r"]))
         ]
@@ -80,6 +90,7 @@ def extract_parameters(j_param):
                 t_max=j_param["t_max"],
                 r=j_param["r"],
                 seed=j_param["seed"],
+                move=getattr(model.Move, j_param["move"])
         )
 
 
@@ -87,34 +98,46 @@ def generate_new_parameters_files():
 
     n_sim = 1000
     p_min = 1
-    p_max = 10
-    n_prices = 10
-    n_positions = 100
-    t_max = 100
+    p_max = 11
+    n_prices = 11
+    n_positions = 21
+    t_max = 25
 
-    for_pool = {
-        "p_min": p_min,
-        "p_max": p_max,
-        "n_prices": n_prices,
-        "n_positions": n_positions,
-        "t_max": t_max,
-        "seed": [int(i) for i in np.random.randint(low=0, high=2**32-1, size=n_sim)],
-        "r": [float(i) for i in np.random.uniform(low=0, high=1, size=n_sim)]
-    }
+    for move in (
+        model.Move.max_profit, model.Move.strategic, model.Move.max_diff,
+        model.Move.equal_sharing
+    ):
+        str_move = str(move).replace("Move.", "")
 
-    with open("parameters/json/pool.json", "w") as f:
-        json.dump(for_pool, f, sort_keys=True, indent=4)
-
-    for i in (25, 50, 75):
-        for_ind = {
+        for_pool = {
             "p_min": p_min,
             "p_max": p_max,
             "n_prices": n_prices,
             "n_positions": n_positions,
             "t_max": t_max,
-            "seed": np.random.randint(low=0, high=2**32),
-            "r": i/100
+            "seed": [int(i) for i in np.random.randint(low=0, high=2**32-1, size=n_sim)],
+            "r": [float(i) for i in np.random.uniform(low=0, high=1, size=n_sim)],
+            "move": str_move,
         }
 
-        with open("parameters/json/{}.json".format(i), "w") as f:
-            json.dump(for_ind, f, sort_keys=True, indent=4)
+        file_name = "data/json/pool_{}.json".format(str_move)
+
+        with open(file_name, "w") as f:
+            json.dump(for_pool, f, sort_keys=True, indent=4)
+
+        for i in (25, 50):
+            for_ind = {
+                "p_min": p_min,
+                "p_max": p_max,
+                "n_prices": n_prices,
+                "n_positions": n_positions,
+                "t_max": t_max,
+                "seed": np.random.randint(low=0, high=2**32),
+                "r": i/100,
+                "move": str_move
+            }
+
+            file_name = "data/json/{}_{}.json".format(i, str_move)
+
+            with open(file_name, "w") as f:
+                json.dump(for_ind, f, sort_keys=True, indent=4)

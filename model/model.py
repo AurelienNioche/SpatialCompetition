@@ -17,6 +17,15 @@ import numpy as np
 import itertools
 
 import backup
+import enum
+
+
+class Move(enum.Enum):
+
+    max_profit = enum.auto()
+    max_diff = enum.auto()
+    strategic = enum.auto()
+    equal_sharing = enum.auto()
 
 
 class Model:
@@ -47,6 +56,15 @@ class Model:
 
         # Prepare useful arrays
         self.n_consumers = self.compute_n_consumers()
+
+        self.move = {
+
+            Move.max_profit: self.move_profit_based,
+            Move.max_diff: self.move_diff_based,
+            Move.equal_sharing: self.move_equal_sharing,
+            Move.strategic: self.move_profit_strategic_based
+
+        }[self.parameters.move]
 
     def compute_n_consumers(self):
         
@@ -150,7 +168,7 @@ class Model:
 
         return n_consumers
 
-    def optimal_move(self, opp_move):
+    def move_profit_based(self, opp_move):
 
         """
         Select the move that give the maximum profit at t
@@ -170,6 +188,58 @@ class Model:
         i = np.random.choice(idx)
 
         return i
+
+    def move_diff_based(self, opp_move):
+
+        exp_profits = np.zeros((self.n_strategies, 2))
+
+        for i in range(self.n_strategies):
+            exp_profits[i, :] = self.profits_given_position_and_price(i, opp_move)
+
+        profits_differences = exp_profits[:, 0] - exp_profits[:, 1]
+        max_profits_difference = max(profits_differences)
+
+        # noinspection PyTypeChecker
+        idx = np.flatnonzero(profits_differences == max_profits_difference)
+
+        return np.random.choice(idx)
+
+    def move_profit_strategic_based(self, opp_move):
+
+        values = np.zeros(self.n_strategies)
+
+        profits_t_plus = np.zeros((self.n_strategies, 2))
+
+        for i in range(self.n_strategies):
+            profits_t = self.profits_given_position_and_price(i, opp_move)[0]
+            for j in range(self.n_strategies):
+                profits_t_plus[j] = self.profits_given_position_and_price(i, j)
+
+            max_profits_opp = max(profits_t_plus[:, 1])
+            mean_profits_t_plus = np.mean(profits_t_plus[profits_t_plus[:, 1] == max_profits_opp, 0])
+            values[i] = profits_t + mean_profits_t_plus
+
+        max_value = max(values)
+
+        idx = np.flatnonzero(values == max_value)
+
+        return np.random.choice(idx)
+
+    def move_equal_sharing(self, opp_move):
+
+        exp_profits = np.zeros((self.n_strategies, 2))
+
+        for i in range(self.n_strategies):
+            exp_profits[i] = self.profits_given_position_and_price(i, opp_move)
+
+        max_profits = np.max(exp_profits, axis=0)
+        sum_diff = np.sum(exp_profits - max_profits, axis=1)
+
+        max_value = max(sum_diff)
+
+        idx = np.flatnonzero(sum_diff == max_value)
+
+        return np.random.choice(idx)
 
     def run(self):
         
@@ -194,7 +264,7 @@ class Model:
 
             passive = (active + 1) % 2  # Get passive id
 
-            moves[active] = self.optimal_move(moves[passive])  # Make play active firm
+            moves[active] = self.move(moves[passive])  # Make play active firm
 
             move0, move1 = moves  # Useful for call of functions
 

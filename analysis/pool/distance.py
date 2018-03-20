@@ -19,9 +19,6 @@ import os
 
 def distance(pool_backup, fig_name, color=False):
 
-    # Create directories if not already existing
-    os.makedirs(os.path.dirname(fig_name), exist_ok=True)
-
     # Shortcuts
     parameters = pool_backup.parameters
     backups = pool_backup.backups
@@ -93,6 +90,8 @@ def distance(pool_backup, fig_name, color=False):
     # Cut the margins
     plt.tight_layout()
 
+    # Create directories if not already existing
+    os.makedirs(os.path.dirname(fig_name), exist_ok=True)
     # Save fig
     plt.savefig(fig_name)
 

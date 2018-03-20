@@ -24,13 +24,13 @@ class Backup:
 
         self.parameters = parameters
 
-    def save(self, file_names):
+    def save(self, parameters_file, data_file):
 
-        for i in file_names.values():
+        for i in (parameters_file, data_file):
             os.makedirs(os.path.dirname(i), exist_ok=True)
 
         # Save a summary of parameters in json
-        with open(file_names["json"], "w") as f:
+        with open(parameters_file, "w") as f:
             try:
                 json.dump(self.parameters, f, indent=2)
 
@@ -39,7 +39,7 @@ class Backup:
                 json.dump(self.parameters.dict(), f, indent=2)
 
         # Save data in pickle
-        with open(file_names["pickle"], "wb") as f:
+        with open(data_file, "wb") as f:
             pickle.dump(self, f)
 
     @staticmethod

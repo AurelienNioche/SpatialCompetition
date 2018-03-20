@@ -40,8 +40,6 @@ def prices_over_fov(pool_backup, pos_subplot):
 
     for b in backups:
 
-        print(np.min(b.prices), np.max(b.prices))
-
         r = b.parameters.r
 
         for i, bound in enumerate(boundaries[1:]):
@@ -134,9 +132,6 @@ def profits_over_fov(pool_backup, pos_subplot):
 
 def prices_and_profits(pool_backup, fig_name):
 
-    # Create directories if not already existing
-    os.makedirs(os.path.dirname(fig_name), exist_ok=True)
-
     plt.figure(figsize=(4, 5), dpi=200)
 
     n_rows = 2
@@ -149,6 +144,8 @@ def prices_and_profits(pool_backup, fig_name):
     # Cut margins
     plt.tight_layout()
 
+    # Create directories if not already existing
+    os.makedirs(os.path.dirname(fig_name), exist_ok=True)
     # Save fig
     plt.savefig(fig_name)
 
