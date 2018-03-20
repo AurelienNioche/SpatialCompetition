@@ -36,7 +36,8 @@ class Backup:
 
             except TypeError:
                 # parameters for a single run are not a dict but an arbitrary Python object
-                json.dump(self.parameters.dict(), f, indent=2)
+                parameters = self.parameters.dict()
+                json.dump(parameters, f, indent=2)
 
         # Save data in pickle
         with open(data_file, "wb") as f:

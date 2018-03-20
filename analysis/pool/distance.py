@@ -17,7 +17,7 @@ from pylab import plt, np
 import os
 
 
-def distance(pool_backup, fig_name, color=False):
+def distance(pool_backup, fig_name=None, ax=None):
 
     # Shortcuts
     parameters = pool_backup.parameters
@@ -58,8 +58,9 @@ def distance(pool_backup, fig_name, color=False):
         z[i] = np.mean(b.profits[-span:, :])
 
     # Plot this
-    fig = plt.figure(figsize=(5, 5), dpi=200)
-    ax = plt.subplot()
+    if ax is None:
+        fig = plt.figure(figsize=(5, 5), dpi=200)
+        ax = fig.add_subplot()
 
     # Enhance aesthetics
     ax.set_xlim(-0.009, 1.005)
@@ -82,20 +83,21 @@ def distance(pool_backup, fig_name, color=False):
     # random_dist = np.mean(np.absolute(random_pos[0] - random_pos[1]))
     # ax.axhline(random_dist, color='0.5', linewidth=0.5, linestyle="--", zorder=1)
 
-    if color:
-        _color(fig=fig, ax=ax, x=x, y=y, z=z)
-    else:
-        _bw(ax=ax, x=x, y=y, y_err=y_err)
+    # if color:
+    #     _color(fig=fig, ax=ax, x=x, y=y, z=z)
+    # else:
+    _bw(ax=ax, x=x, y=y, y_err=y_err)
 
-    # Cut the margins
-    plt.tight_layout()
+    if fig_name:
+        # Cut the margins
+        plt.tight_layout()
 
-    # Create directories if not already existing
-    os.makedirs(os.path.dirname(fig_name), exist_ok=True)
-    # Save fig
-    plt.savefig(fig_name)
+        # Create directories if not already existing
+        os.makedirs(os.path.dirname(fig_name), exist_ok=True)
+        # Save fig
+        plt.savefig(fig_name)
 
-    plt.close()
+        plt.close()
 
 
 def _bw(ax, x, y, y_err):
@@ -107,10 +109,10 @@ def _bw(ax, x, y, y_err):
     ax.errorbar(x, y, yerr=y_err, fmt='.', color="0.80", zorder=-10, linewidth=0.5)
 
 
-def _color(fig, ax, x, y, z):
-
-    # Do the scatter plot
-    scat = ax.scatter(x, y, c=z, zorder=10, alpha=0.25)
-
-    # Add a color bar
-    fig.colorbar(scat, label="Profits")
+# def _color(fig, ax, x, y, z):
+#
+#     # Do the scatter plot
+#     scat = ax.scatter(x, y, c=z, zorder=10, alpha=0.25)
+#
+#     # Add a color bar
+#     fig.colorbar(scat, label="Profits")

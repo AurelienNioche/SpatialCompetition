@@ -50,7 +50,9 @@ class Parameters:
         assert 0 < self.r <= 1, "'r' have to be comprised between 0 and 1."
 
     def dict(self):
-        return {i: j for i, j in self.__dict__.items() if not i.startswith("__")}
+        dic = {i: j for i, j in self.__dict__.items() if not i.startswith("__")}
+        dic["move"] = str(dic["move"]).replace("Move.", "")
+        return dic
 
 
 def load(json_file):
@@ -96,12 +98,16 @@ def extract_parameters(j_param):
 
 def generate_new_parameters_files():
 
-    n_sim = 1000
+    n_pool = 1000
+    n_batch = 50
+
     p_min = 1
     p_max = 11
     n_prices = 11
     n_positions = 21
     t_max = 25
+
+    to_create = []
 
     for move in (
         model.Move.max_profit, model.Move.strategic, model.Move.max_diff,
@@ -109,21 +115,39 @@ def generate_new_parameters_files():
     ):
         str_move = str(move).replace("Move.", "")
 
+        # ------ Pool ---------- #
+
         for_pool = {
             "p_min": p_min,
             "p_max": p_max,
             "n_prices": n_prices,
             "n_positions": n_positions,
             "t_max": t_max,
-            "seed": [int(i) for i in np.random.randint(low=0, high=2**32-1, size=n_sim)],
-            "r": [float(i) for i in np.random.uniform(low=0, high=1, size=n_sim)],
+            "seed": [int(i) for i in np.random.randint(low=0, high=2**32-1, size=n_pool)],
+            "r": [float(i) for i in np.random.uniform(low=0, high=1, size=n_pool)],
             "move": str_move,
         }
 
-        file_name = "data/json/pool_{}.json".format(str_move)
+        # to_create.append(("data/json/pool_{}.json".format(str_move), for_pool))
 
-        with open(file_name, "w") as f:
-            json.dump(for_pool, f, sort_keys=True, indent=4)
+        # ------ Batch --------- #
+
+        assert n_batch % 2 == 0, "Number of batch should be a pair number"
+
+        for_batch = {
+            "p_min": p_min,
+            "p_max": p_max,
+            "n_prices": n_prices,
+            "n_positions": n_positions,
+            "t_max": t_max,
+            "seed": [int(i) for i in np.random.randint(low=0, high=2**32-1, size=n_batch)],
+            "r": [0.25, ] * (n_batch//2) + [0.50, ] * (n_batch//2),
+            "move": str_move,
+        }
+
+        to_create.append(("data/json/batch_{}.json".format(str_move), for_batch))
+
+        # ---- Separate -------- #
 
         for i in (25, 50):
             for_ind = {
@@ -137,7 +161,8 @@ def generate_new_parameters_files():
                 "move": str_move
             }
 
-            file_name = "data/json/{}_{}.json".format(i, str_move)
+            # to_create.append(("data/json/{}_{}.json".format(i, str_move), for_ind))
 
-            with open(file_name, "w") as f:
-                json.dump(for_ind, f, sort_keys=True, indent=4)
+    for f_name, content in to_create:
+        with open(f_name, "w") as f:
+            json.dump(content, f, sort_keys=True, indent=4)

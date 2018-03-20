@@ -16,7 +16,7 @@ from pylab import plt, np
 import os
 
 
-def prices_over_fov(pool_backup, pos_subplot):
+def prices_over_fov(pool_backup, ax):
 
     # Shortcuts
     parameters = pool_backup.parameters
@@ -51,9 +51,6 @@ def prices_over_fov(pool_backup, pos_subplot):
     mean_data = [np.mean(d) for d in data]
     std_data = [np.std(d) for d in data]
 
-    # Create figs and plot
-    ax = plt.subplot(*pos_subplot)
-
     # Enhance aesthetics
     ax.set_xlim(-0.01, 1.01)
 
@@ -73,7 +70,7 @@ def prices_over_fov(pool_backup, pos_subplot):
            edgecolor='white', linewidth=2, facecolor="0.75")
 
 
-def profits_over_fov(pool_backup, pos_subplot):
+def profits_over_fov(pool_backup, ax):
 
     # Shortcuts
     parameters = pool_backup.parameters
@@ -108,9 +105,6 @@ def profits_over_fov(pool_backup, pos_subplot):
     mean_data = [np.mean(d) for d in data]
     std_data = [np.std(d) for d in data]
 
-    # Create figs and plot
-    ax = plt.subplot(*pos_subplot)
-
     # Enhance aesthetics
     ax.set_xlim(-0.01, 1.01)
 
@@ -130,23 +124,31 @@ def profits_over_fov(pool_backup, pos_subplot):
            edgecolor='white', linewidth=2, facecolor="0.75")
 
 
-def prices_and_profits(pool_backup, fig_name):
+def prices_and_profits(pool_backup, fig_name=None, ax_price=None, ax_profit=None):
 
-    plt.figure(figsize=(4, 5), dpi=200)
+    # Create figure and axes if not given in args
+    if ax_price is None or ax_profit is None:
 
-    n_rows = 2
-    n_cols = 1
+        fig = plt.figure(figsize=(4, 5), dpi=200)
 
-    prices_over_fov(pool_backup, (n_rows, n_cols, 1))
+        n_rows = 2
+        n_cols = 1
 
-    profits_over_fov(pool_backup, (n_rows, n_cols, 2))
+        ax_price = fig.add_subplot(n_rows, n_cols, 1)
+        ax_profit = fig.add_subplot(n_rows, n_cols, 2)
 
-    # Cut margins
-    plt.tight_layout()
+    prices_over_fov(pool_backup, ax_price)
+    profits_over_fov(pool_backup, ax_profit)
 
-    # Create directories if not already existing
-    os.makedirs(os.path.dirname(fig_name), exist_ok=True)
-    # Save fig
-    plt.savefig(fig_name)
+    if fig_name is not None:
 
-    plt.close()
+        # Cut margins
+        plt.tight_layout()
+
+        # Create directories if not already existing
+        os.makedirs(os.path.dirname(fig_name), exist_ok=True)
+
+        # Save fig
+        plt.savefig(fig_name)
+
+        plt.close()

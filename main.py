@@ -17,6 +17,8 @@ import multiprocessing as mlt
 import tqdm
 import os
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.gridspec
 
 import model
 import analysis
@@ -59,44 +61,6 @@ def produce_data(parameters_file, data_file):
 
     return pool_backup
 
-
-# def get_file_names(condition):
-#
-#     """
-#     Give the file names depending on condition
-#     :param condition: string
-#     :return: Files names (tuple of size 3 containing dictionaries)
-#     """
-#
-#     parameters_file = "parameters/json/{}.json".format(condition)
-#     data_file = {
-#         "pickle": "data/pickle/{}.p".format(condition),
-#         "json": "data/json/{}.json".format(condition)
-#     }
-#
-#     return parameters_file, data_file
-#
-#
-# def get_fig_names():
-#
-#     folder = "data/figs"
-#
-#     fig_names = {
-#         "distance": "{}/pool_distance.pdf".format(folder),
-#         "prices_and_profits": "{}/pool_prices_and_profits.pdf".format(folder),
-#         "separate": "{}/separate.pdf".format(folder),
-#         "targetable_consumers": "{}/targetable_consumers.pdf".format(folder),
-#         "captive_consumers": "{}/captive_consumers.pdf".format(folder)
-#     }
-#
-#     return fig_names
-
-# def terminal_msg(figure_files):
-#
-#     print("Figures produced are:")
-#     for file in figure_files.values():
-#         print("* '{}'".format(file))
-#     print()
 
 def data_already_produced(*args):
 
@@ -142,9 +106,34 @@ def pooled_data(args):
         else:
             pool_backup = backup.PoolBackup.load(data_file)
 
-        analysis.pool.distance(pool_backup=pool_backup, fig_name='fig/distance_{}.pdf'.format(move))
-        analysis.pool.prices_and_profits(pool_backup=pool_backup,
-                                         fig_name='fig/prices_and_profits_{}.pdf'.format(move))
+        # analysis.pool.distance(pool_backup=pool_backup, fig_name='fig/distance_{}.pdf'.format(move))
+        # analysis.pool.prices_and_profits(pool_backup=pool_backup,
+        #                                  fig_name='fig/prices_and_profits_{}.pdf'.format(move))
+        analysis.pool.distance_price_and_profit(pool_backup=pool_backup,
+                                                fig_name="fig/distance_price_profit_{}.pdf".format(move))
+
+
+def batch_data(args):
+
+    """
+    Produce figures for 'pooled' data
+    :param args: Parsed args from command line ('Namespace' object)
+    :return: None
+    """
+
+    for move in (str(i).replace("Move.", "") for i in (
+            model.Move.max_profit, model.Move.strategic, model.Move.max_diff, model.Move.equal_sharing)):
+
+        parameters_file = "data/json/batch_{}.json".format(move)
+        data_file = "data/pickle/batch_{}.p".format(move)
+
+        if not data_already_produced(data_file) or args.force:
+            batch_backup = produce_data(parameters_file, data_file)
+
+        else:
+            batch_backup = backup.PoolBackup.load(data_file)
+
+        analysis.batch.plot(batch_backup=batch_backup, fig_name='fig/batch_{}.pdf'.format(move))
 
 
 def individual_data(args):
@@ -162,15 +151,15 @@ def individual_data(args):
 
         for r in ("25", "50"):  # , "75"):
 
-            parameters_file = "data/json/ind_{}_{}.json".format(r, move)
-            data_file = "data/json/ind_{}_{}.json".format(r, move)
+            parameters_file = "data/json/{}_{}.json".format(r, move)
+            data_file = "data/pickle/{}_{}.p".format(r, move)
 
-            if not data_already_produced(data_file, parameters_file) or args.force:
+            if not data_already_produced(parameters_file, data_file) or args.force:
 
                 json_parameters = parameters.load(parameters_file)
                 param = parameters.extract_parameters(json_parameters)
                 run_backup = run(param)
-                run_backup.save(data_file)
+                run_backup.save(parameters_file, data_file)
 
             else:
                 run_backup = backup.RunBackup.load(data_file)
@@ -178,6 +167,75 @@ def individual_data(args):
             run_backups.append(run_backup)
 
         analysis.separate.separate(backups=run_backups, fig_name='fig/separate_{}.pdf'.format(move))
+
+
+def clustered_data(args):
+
+    for move in (str(i).replace("Move.", "") for i in (
+            model.Move.max_profit, model.Move.strategic, model.Move.max_diff, model.Move.equal_sharing)):
+
+        parameters_file = "data/json/pool_{}.json".format(move)
+        data_file = "data/pickle/pool_{}.p".format(move)
+
+        if not data_already_produced(data_file) or args.force:
+            pool_backup = produce_data(parameters_file, data_file)
+
+        else:
+            pool_backup = backup.PoolBackup.load(data_file)
+
+        run_backups = []
+
+        for r in ("25", "50"):  # , "75"):
+
+            parameters_file = "data/json/{}_{}.json".format(r, move)
+            data_file = "data/pickle/{}_{}.p".format(r, move)
+
+            if not data_already_produced(parameters_file, data_file) or args.force:
+
+                json_parameters = parameters.load(parameters_file)
+                param = parameters.extract_parameters(json_parameters)
+                run_backup = run(param)
+                run_backup.save(parameters_file, data_file)
+
+            else:
+                run_backup = backup.RunBackup.load(data_file)
+
+            run_backups.append(run_backup)
+
+        parameters_file = "data/json/batch_{}.json".format(move)
+        data_file = "data/pickle/batch_{}.p".format(move)
+
+        if not data_already_produced(data_file) or args.force:
+            batch_backup = produce_data(parameters_file, data_file)
+
+        else:
+            batch_backup = backup.PoolBackup.load(data_file)
+
+        fig = plt.figure(figsize=(18, 6))
+        gs = matplotlib.gridspec.GridSpec(nrows=2, ncols=2)
+
+        analysis.pool.distance_price_and_profit(pool_backup=pool_backup, subplot_spec=gs[0, 0])
+        analysis.separate.separate(backups=run_backups, subplot_spec=gs[:, 1])
+        analysis.batch.plot(batch_backup=batch_backup, subplot_spec=gs[1, 0])
+
+        ax = fig.add_subplot(gs[:, :], zorder=-10)
+
+        plt.axis("off")
+        ax.text(
+            s="B", x=-0.05, y=0, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes,
+            fontsize=20)
+        ax.text(
+            s="A", x=-0.05, y=0.55, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes,
+            fontsize=20)
+        ax.text(
+            s="C", x=0.5, y=0, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes,
+            fontsize=20)
+
+        plt.tight_layout()
+
+        fig_name = "fig/clustered_{}.pdf".format(move)
+        os.makedirs(os.path.dirname(fig_name), exist_ok=True)
+        plt.savefig(fig_name)
 
 
 def main(args):
@@ -192,17 +250,22 @@ def main(args):
         args.force = True
         parameters.generate_new_parameters_files()
 
-    if args.pooled or (not args.individual and not args.a_priori):
+    if args.pooled:
         pooled_data(args)
 
-    if args.individual or (not args.pooled and not args.a_priori):
+    if args.individual:
         individual_data(args)
 
-    if args.a_priori or (not args.individual and not args.pooled):
+    if args.batch:
+        batch_data(args)
+
+    if args.a_priori:
         a_priori()
 
+    if (not args.pooled and not args.individual and not args.batch and not args.a_priori) or args.clustered:
+        clustered_data(args)
+
     print("Figures have been created in 'fig' folder.")
-    # terminal_msg(get_fig_names())
 
 
 if __name__ == "__main__":
@@ -220,6 +283,10 @@ if __name__ == "__main__":
                         help="Do figures ONLY for pooled results")
     parser.add_argument('-a', '--a_priori', action="store_true", default=False,
                         help="Do figures ONLY for a priori analysis")
+    parser.add_argument('-b', '--batch', action="store_true", default=False,
+                        help="Do figures ONLY for batch analysis (2 values of r)")
+    parser.add_argument('-c', '--clustered', action="store_true", default=False,
+                        help="Do figures in a 'clustered' mode")
     parsed_args = parser.parse_args()
 
     main(parsed_args)
