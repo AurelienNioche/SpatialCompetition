@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.figure import SubplotParams
+# from matplotlib.figure import SubplotParams
 import matplotlib.gridspec as gridspec
 import os
 
@@ -137,6 +137,7 @@ def pos_firmA_over_pos_firmB(backup, subplot_position):
 
     return ax
 
+
 def separate(backups, fig_name):
 
     # Create directories if not already existing
@@ -176,7 +177,8 @@ def separate(backups, fig_name):
         # Plot the 4 sub-figures on the right
         eeg_like(backup=b, subplots_positions=subplots_positions)
 
-        ax.text(0.5, 1.5, '$r$ = {:.2f}'.format(b.parameters.r), horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
+        ax.text(0.5, 1.5, '$r$ = {:.2f}'.format(b.parameters.r), horizontalalignment='center',
+                verticalalignment='center', transform=ax.transAxes)
 
     plt.tight_layout()
 
