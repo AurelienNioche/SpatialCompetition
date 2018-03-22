@@ -109,6 +109,7 @@ def profits_over_fov(pool_backup, ax):
     ax.set_xlim(-0.01, 1.01)
 
     ax.set_xticks(np.arange(0, 1.1, 0.25))
+    ax.set_ylim(0, 120)
 
     ax.tick_params(labelsize=9)
 
