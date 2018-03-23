@@ -128,7 +128,7 @@ def generate_new_parameters_files():
             "move": str_move,
         }
 
-        # to_create.append(("data/json/pool_{}.json".format(str_move), for_pool))
+        to_create.append(("data/json/pool_{}.json".format(str_move), for_pool))
 
         # ------ Batch --------- #
 
@@ -161,7 +161,7 @@ def generate_new_parameters_files():
                 "move": str_move
             }
 
-            # to_create.append(("data/json/{}_{}.json".format(i, str_move), for_ind))
+            to_create.append(("data/json/{}_{}.json".format(i, str_move), for_ind))
 
     for f_name, content in to_create:
         with open(f_name, "w") as f:

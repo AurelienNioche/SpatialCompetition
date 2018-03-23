@@ -211,12 +211,14 @@ def clustered_data(args):
         else:
             batch_backup = backup.PoolBackup.load(data_file)
 
-        fig = plt.figure(figsize=(18, 6))
-        gs = matplotlib.gridspec.GridSpec(nrows=2, ncols=2)
+        fig = plt.figure(figsize=(13.5, 7))
+        gs = matplotlib.gridspec.GridSpec(nrows=2, ncols=2, width_ratios=[1, 0.7])
 
         analysis.pool.distance_price_and_profit(pool_backup=pool_backup, subplot_spec=gs[0, 0])
         analysis.separate.separate(backups=run_backups, subplot_spec=gs[:, 1])
         analysis.batch.plot(batch_backup=batch_backup, subplot_spec=gs[1, 0])
+
+        plt.tight_layout()
 
         ax = fig.add_subplot(gs[:, :], zorder=-10)
 
@@ -228,14 +230,13 @@ def clustered_data(args):
             s="A", x=-0.05, y=0.55, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes,
             fontsize=20)
         ax.text(
-            s="C", x=0.5, y=0, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes,
+            s="C", x=0.58, y=0, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes,
             fontsize=20)
-
-        plt.tight_layout()
 
         fig_name = "fig/clustered_{}.pdf".format(move)
         os.makedirs(os.path.dirname(fig_name), exist_ok=True)
         plt.savefig(fig_name)
+        plt.show()
 
 
 def main(args):

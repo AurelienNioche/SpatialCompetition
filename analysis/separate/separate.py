@@ -141,7 +141,7 @@ def pos_firmA_over_pos_firmB(backup, subplot_position):
 def separate(backups, fig_name=None, subplot_spec=None):
 
     # Width ratios of the two columns (we expect the right column to be twice larger than the left one)
-    width_ratios = [1, 2]
+    width_ratios = [0.8, 1]
 
     n_rows, n_cols = 2, 2
 
@@ -155,7 +155,7 @@ def separate(backups, fig_name=None, subplot_spec=None):
 
     else:
         gs0 = gridspec.GridSpecFromSubplotSpec(nrows=n_rows, ncols=n_cols, subplot_spec=subplot_spec,
-                                               width_ratios=width_ratios, wspace=0.3, hspace=0.5)
+                                               width_ratios=width_ratios, wspace=0.4, hspace=0.5)
 
     # 2 main rows corresponding to the 2 'radius' conditions
     # n_row = 2
